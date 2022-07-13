@@ -10,6 +10,9 @@ import (
 var token string
 
 func main() {
+
+	createDirs()
+
 	if tokenEnv := os.Getenv("BOT_TOKEN"); tokenEnv == "" {
 		panic("Token is not declared.\nPlease attach your token as environment variable. Eg: BOT_TOKEN='token'")
 	} else {
@@ -33,3 +36,33 @@ func startBot() {
 
 	telegram.StartTelegramBot()
 }
+
+// create tmp directory if it's not exists
+func createTmpDir() {
+	if _, err := os.Stat("tmp"); os.IsNotExist(err) {
+		os.Mkdir("tmp", 0755)
+	}
+}
+
+// create videos directory if it's not exists
+func createVideosDir() {
+	if _, err := os.Stat("videos"); os.IsNotExist(err) {
+		os.Mkdir("videos", 0755)
+	}
+}
+
+// create videos/raw directory if it's not exists
+func createRawVideosDir() {
+	if _, err := os.Stat("videos/raw"); os.IsNotExist(err) {
+		os.Mkdir("videos/raw", 0755)
+	}
+}
+
+// create all directories if they're not exists
+func createDirs() {
+	createTmpDir()
+	createVideosDir()
+	createRawVideosDir()
+}
+
+//
