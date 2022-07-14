@@ -1,8 +1,8 @@
 package page
 
 import (
-	"github.com/canack/telebots/services/page_reader/page/target"
-	"github.com/canack/telebots/services/page_reader/types"
+	"github.com/canack/telebots/services/pageReader/page/target"
+	"github.com/canack/telebots/services/pageReader/types"
 )
 
 func configureReddit(entryUrl string) *target.Reddit {

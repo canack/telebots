@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"github.com/canack/telebots/services/page_reader/page"
+	"github.com/canack/telebots/services/pageReader/page"
 	tele "gopkg.in/telebot.v3"
 	"image/jpeg"
 	"regexp"

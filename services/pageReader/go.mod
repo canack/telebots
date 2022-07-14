@@ -1,4 +1,4 @@
-module github.com/canack/telebots/services/page_reader
+module github.com/canack/telebots/services/pageReader
 
 go 1.18
 

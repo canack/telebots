@@ -3,7 +3,7 @@ package target
 import (
 	"bytes"
 	"context"
-	"github.com/canack/telebots/services/page_reader/types"
+	"github.com/canack/telebots/services/pageReader/types"
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/devices"
 	"image"
