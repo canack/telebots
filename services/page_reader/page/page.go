@@ -24,7 +24,7 @@ func configureReddit(entryUrl string) *target.Reddit {
 
 func CrawlReddit(entryUrl string) (*[]types.ImageAndText, error) {
 	a := configureReddit(entryUrl)
-	content, err := a.Crawl()
+	content, err := a.CrawlWithTimeout()
 
 	if err != nil {
 		return nil, err

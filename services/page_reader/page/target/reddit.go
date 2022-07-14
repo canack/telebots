@@ -2,11 +2,12 @@ package target
 
 import (
 	"bytes"
-	"fmt"
+	"context"
 	"github.com/canack/telebots/services/page_reader/types"
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/devices"
 	"image"
+	"time"
 )
 
 type Reddit struct {
@@ -42,30 +43,59 @@ func NewReddit(entryUrl string, mainEntryPath string, mainEntryTextPath string,
 	}
 }
 
-func (r *Reddit) Crawl() (*[]types.ImageAndText, error) {
+func (r *Reddit) CrawlWithTimeout() (*[]types.ImageAndText, error) {
+	// Eğer 90 saniye içerisinde bu işlemi yapamıyorsa problem var demektir.
+	ctx, cancel := context.WithTimeout(context.TODO(), 90*time.Second)
+	defer cancel()
+
+	dataChan := make(chan *[]types.ImageAndText)
+	errChan := make(chan error)
+
+	go r.Crawl(ctx, dataChan, errChan)
+
+	select {
+	case <-ctx.Done():
+		return &[]types.ImageAndText{}, ctx.Err()
+	case err := <-errChan:
+		if err != nil {
+			return &[]types.ImageAndText{}, err
+		}
+		return <-dataChan, nil
+	}
+}
+
+func (r *Reddit) Crawl(ctx context.Context, dataChan chan *[]types.ImageAndText, errChan chan error) {
 
 	var result []types.ImageAndText
 
-	// To load entry page
-	page := rod.New().MustConnect().MustPage(r.EntryUrl)
-	page.MustEmulate(devices.LaptopWithTouch)
-	page.MustReload().MustWaitLoad()
-	page.MustReload().MustWaitLoad()
+	p := rod.New().Context(ctx).MustConnect().MustPage()
+	defer p.Browser().Close()
 
-	mainResult, err := r.mainEntry(page)
-	if err != nil {
-		return &[]types.ImageAndText{}, err
-	}
+	rod.Try(func() {
+		p.MustNavigate(r.EntryUrl)
+		p.MustEmulate(devices.LaptopWithTouch)
+		p.MustReload().MustWaitLoad()
+		p.MustReload().MustWaitLoad()
 
-	result = append(result, *mainResult)
+		mainResult, err := r.mainEntry(p)
+		if err != nil {
+			errChan <- err
+			dataChan <- &result
+		}
 
-	subResult, err := r.subEntry(page)
-	if err != nil {
-		return &[]types.ImageAndText{}, err
-	}
-	result = append(result, *subResult...)
+		result = append(result, *mainResult)
 
-	return &result, nil
+		subResult, err := r.subEntry(p)
+		if err != nil {
+			errChan <- err
+			dataChan <- &result
+		}
+		result = append(result, *subResult...)
+
+		errChan <- nil
+		dataChan <- &result
+	})
+
 }
 
 func (r *Reddit) mainEntry(page *rod.Page) (*types.ImageAndText, error) {
@@ -80,8 +110,6 @@ func (r *Reddit) mainEntry(page *rod.Page) (*types.ImageAndText, error) {
 	img, _, _ := image.Decode(bytesReader)
 	result.Image = img
 	result.Text = t.MustText()
-
-	//
 
 	return &result, nil
 }
@@ -102,15 +130,10 @@ func (r *Reddit) subEntry(page *rod.Page) (*[]types.ImageAndText, error) {
 		bytesReader := bytes.NewReader(imgBytes)
 		img, _, _ := image.Decode(bytesReader)
 		if img.Bounds().Dy() >= r.ScreenShotSizeY {
-			//i to str
-			//iStr := strconv.Itoa(e)
-			p.MustScreenshot() // TODO: edit this line
+			p.MustScreenshot()
 			e++
 			comment := p.MustElement(r.SubEntryTextPath).MustText()
-			fmt.Println(comment)
-
 			result = append(result, types.ImageAndText{Image: img, Text: comment})
-
 		}
 	}
 
