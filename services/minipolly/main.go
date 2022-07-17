@@ -5,13 +5,13 @@ import (
 	"github.com/canack/telebots/services/minipolly/telegram"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 var token string
 
 func main() {
-
-	createDirs()
 
 	if tokenEnv := os.Getenv("BOT_TOKEN"); tokenEnv == "" {
 		panic("Token is not declared.\nPlease attach your token as environment variable. Eg: BOT_TOKEN='token'")
@@ -20,7 +20,8 @@ func main() {
 	}
 
 	log.Println("Bot started")
-
+	cleanDirs()
+	handleSigterm()
 	startBot()
 
 }
@@ -65,4 +66,30 @@ func createDirs() {
 	createRawVideosDir()
 }
 
-//
+// delete all directories if they're exists
+func deleteDirs() {
+	if _, err := os.Stat("tmp"); err == nil {
+		os.RemoveAll("tmp")
+	}
+	if _, err := os.Stat("videos"); err == nil {
+		os.RemoveAll("videos")
+	}
+}
+
+// create clean directories
+func cleanDirs() {
+	deleteDirs()
+	createDirs()
+}
+
+// handle sigterm
+func handleSigterm() {
+	c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		log.Println("Bot stopped")
+		cleanDirs()
+		os.Exit(1)
+	}()
+}
