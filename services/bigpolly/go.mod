@@ -1,4 +1,4 @@
-module github.com/canack/telebots/services/pageReader
+module github.com/canack/telebots/services/bigpolly
 
 go 1.18
 

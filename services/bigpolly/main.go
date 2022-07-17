@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/canack/telebots/services/pageReader/telegram"
+	"github.com/canack/telebots/services/bigpolly/telegram"
 	"log"
 	"os"
 	"os/signal"

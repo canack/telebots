@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"github.com/canack/telebots/services/pageReader/page"
+	"github.com/canack/telebots/services/bigpolly/page"
 	tele "gopkg.in/telebot.v3"
 	"image/jpeg"
 	"regexp"
@@ -25,12 +25,12 @@ func checkSite(site string) bool {
 
 func Crawl(c tele.Context) error {
 	if !checkSite(c.Text()) {
-		return c.Send("Bu site henüz desteklenmiyor.")
+		return c.Send("This site not supported for now.")
 	}
 
 	img, err := page.CrawlReddit(c.Text())
 	if errors.Is(err, context.DeadlineExceeded) {
-		return c.Send("İşlem zaman aşımına uğradı.")
+		return c.Send("Process time out.")
 	} else if err != nil {
 		return c.Send(err.Error())
 	}

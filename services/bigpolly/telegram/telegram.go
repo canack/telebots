@@ -1,7 +1,7 @@
 package telegram
 
 import (
-	"github.com/canack/telebots/services/pageReader/telegram/handler"
+	"github.com/canack/telebots/services/bigpolly/telegram/handler"
 	tele "gopkg.in/telebot.v3"
 	_ "image/jpeg"
 	_ "image/png"

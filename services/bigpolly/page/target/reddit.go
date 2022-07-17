@@ -3,7 +3,7 @@ package target
 import (
 	"bytes"
 	"context"
-	"github.com/canack/telebots/services/pageReader/types"
+	"github.com/canack/telebots/services/bigpolly/types"
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/devices"
 	"image"
@@ -44,7 +44,7 @@ func NewReddit(entryUrl string, mainEntryPath string, mainEntryTextPath string,
 }
 
 func (r *Reddit) CrawlWithTimeout() (*[]types.ImageAndText, error) {
-	// Eğer 90 saniye içerisinde bu işlemi yapamıyorsa problem var demektir.
+	// if crawling takes longer than 90 seconds, cancel it
 	ctx, cancel := context.WithTimeout(context.TODO(), 90*time.Second)
 	defer cancel()
 
