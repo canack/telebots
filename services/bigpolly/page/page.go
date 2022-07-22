@@ -29,7 +29,6 @@ func CrawlReddit(entryUrl string) (*[]types.ImageAndText, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return content, nil
 
 }

@@ -2,53 +2,48 @@ package mediaProcessing
 
 import (
 	"fmt"
-	"github.com/canack/telebots/services/bigpolly/speech"
 	"github.com/canack/telebots/services/bigpolly/types"
-	"io"
 	"log"
 	"os/exec"
 )
 
 type AudioProcessing struct {
-	StartAlias   string    //
-	EndAlias     string    //
-	Filename     string    //
-	Audio        io.Reader // nth audio
-	Length       int       // Length of audio
-	BetweenStart int       //
-	BetweenEnd   int       //
+	StartAlias   string  //
+	EndAlias     string  //
+	Filename     string  // Filename of video
+	Length       float64 // Length of audio
+	BetweenStart float64 // Start time of showing image
+	BetweenEnd   float64 // End time of showing image
 }
 
-// return audio length with using soxi
-func getAudioLength(audio io.Reader) int {
-	return 0
-}
-
-func ProcessAudio(input []types.ImageAndText) []AudioProcessing {
+func ProcessAudio(input []types.PrepareForProcessing) []AudioProcessing {
 	var AP []AudioProcessing
 
+	initNum := 1
+	startAlias := fmt.Sprintf("[%d:a]", initNum)
+	endAlias := fmt.Sprintf("[a%d]", initNum)
+
+	var start float64
+	var end float64
+
 	for _, v := range input {
-		initNum := 1
-		startAlias := fmt.Sprintf("[%d:a]", initNum)
-		endAlias := fmt.Sprintf("[a%d]", initNum)
 
-		speechReader, err := speech.TextToSpeech(&v.Text)
-		if err != nil {
-			panic(err)
-		}
-
-		audioLength := getAudioLength(speechReader)
+		end = start + v.AudioLength
 
 		AP = append(AP, AudioProcessing{
 			StartAlias:   startAlias,
 			EndAlias:     endAlias,
-			Audio:        speechReader,
-			Length:       audioLength,
-			BetweenStart: 0, // Replace here
-			BetweenEnd:   0, // Replace here
+			Filename:     v.AudioFilename,
+			Length:       v.AudioLength,
+			BetweenStart: start,
+			BetweenEnd:   end,
 		})
 
+		start += v.AudioLength
+
 		initNum++
+		startAlias = fmt.Sprintf("[%d:a]", initNum)
+		endAlias = fmt.Sprintf("[a%d]", initNum)
 	}
 
 	return AP
@@ -66,7 +61,7 @@ func GenerateAudioCode(input []AudioProcessing) string {
 	code += `-filter_complex "`
 
 	for _, v := range input {
-		code += fmt.Sprintf("[%s]atrim=end=%d,asetpts=PTS-STARTPTS[%s];",
+		code += fmt.Sprintf("%satrim=end=%f,asetpts=PTS-STARTPTS%s;",
 			v.StartAlias, v.Length, v.EndAlias)
 	}
 
@@ -84,10 +79,9 @@ func GenerateAudioCode(input []AudioProcessing) string {
 
 }
 
-func GenerateAudioProcessedVideo(videoInputFilename, videoOutputFilename, command string) error {
+func ExecuteAudioCode(videoInputFilename, videoOutputFilename, command string) error {
 	code := "ffmpeg -i " + videoInputFilename + " " + command + " " + videoOutputFilename
-
-	executeCommand := exec.Command(code)
+	executeCommand := exec.Command("bash", "-c", code)
 
 	err := executeCommand.Run()
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/canack/telebots/services/bigpolly/speech"
 	"github.com/canack/telebots/services/bigpolly/telegram"
 	"log"
 	"os"
@@ -27,6 +28,10 @@ func main() {
 }
 
 func startBot() {
+	if err := speech.SetupAWS(); err != nil {
+		log.Println(err)
+		panic(err)
+	}
 	if err := telegram.SetupTelegramBot(token); err != nil {
 		panic(err)
 	}
@@ -49,7 +54,7 @@ func handleSigterm() {
 // make tmp directory if it's not exists
 func makeTmpDir() {
 	if _, err := os.Stat("tmp"); os.IsNotExist(err) {
-		os.Mkdir("tmp", 760)
+		os.Mkdir("tmp", 0760)
 	}
 }
 
