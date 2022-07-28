@@ -17,10 +17,8 @@ import (
 func registerRandomVideo() (string, error) {
 	log.Println("Registering random video")
 
-	videoPath := "videos/"
-
 	// get random raw videos in disk
-	files, err := ioutil.ReadDir(videoPath)
+	files, err := ioutil.ReadDir(types.VideoPath)
 	if err != nil {
 		log.Println(err)
 		return "", err
@@ -34,13 +32,13 @@ func registerRandomVideo() (string, error) {
 
 	luckyVideo := rand.Intn(len(fileList))
 
-	video := videoPath + fileList[luckyVideo]
+	video := types.VideoPath + fileList[luckyVideo]
 	return video, nil
 }
 
 // write image to file
 func saveImage(image image.Image) string {
-	filename := "tmp/" + RandomString(32) + ".jpg"
+	filename := types.TempPath + RandomString(32) + ".jpg"
 	f, err := os.Create(filename)
 	if err != nil {
 		log.Println(err)
@@ -56,7 +54,7 @@ func saveImage(image image.Image) string {
 }
 
 func saveAudio(audio io.ReadCloser) (string, error) {
-	s := "tmp/" + RandomString(32) + ".mp3"
+	s := types.TempPath + RandomString(32) + ".mp3"
 	f, err := os.Create(s)
 	if err != nil {
 		log.Println(err)
@@ -86,8 +84,6 @@ func getAudioLength(audioFilename string) (float64, error) {
 		log.Println(err)
 		return 0, nil
 	}
-
-	//audioLength += 1
 
 	return audioLength, nil
 
@@ -146,8 +142,8 @@ func Process(input *[]types.ImageAndText) (string, error) {
 		return "", err
 	}
 
-	out := "tmp/" + RandomString(32) + ".mp4"
-	final := "tmp/" + RandomString(32) + ".mp4"
+	out := types.TempPath + RandomString(32) + ".mp4"
+	final := types.TempPath + RandomString(32) + ".mp4"
 
 	if err := ExecuteAudioCode(inputVideo, out, acode); err != nil {
 		return "", err

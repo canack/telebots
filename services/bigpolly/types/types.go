@@ -2,6 +2,9 @@ package types
 
 import "image"
 
+var VideoPath = "videos/"
+var TempPath = "tmp/"
+
 type Webpage struct {
 }
 
